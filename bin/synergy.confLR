@@ -1,12 +1,12 @@
 section: screens
-	mkaimal-serv:
+	host1:
 		halfDuplexCapsLock = false
 		halfDuplexNumLock = false
 		halfDuplexScrollLock = false
 		xtestIsXineramaUnaware = false
 		switchCorners = none 
 		switchCornerSize = 0
-	banlmohanka.citrite.net:
+	host2:
 		halfDuplexCapsLock = false
 		halfDuplexNumLock = false
 		halfDuplexScrollLock = false
@@ -19,10 +19,10 @@ section: aliases
 end
 
 section: links
-	mkaimal-serv:
-		right  = banlmohanka.citrite.net
-	banlmohanka.citrite.net:
-		left = mkaimal-serv
+	host1:
+		right  = host2
+	host2:
+		left = host1
 end
 
 section: options
