@@ -1,0 +1,95 @@
+#!/bin/bash 
+
+
+syn_path=${HOME}/bin
+
+usage()
+{
+cat <<EOF
+synstart.sh  -L -K -r -h
+-U : start the client in up-down mode
+-L : start left right mode - synergy.confLR
+-R : start right left mode - synergy.confRL
+-K : kill synergy server
+-r : Kill all process, and start again  
+-p : port to use ( Default 24800)
+-h : usage page
+EOF
+}
+
+startclient() 
+{
+# login to client and start synergy client
+printf "Starting client with server ip : $IP_ADDR \n"
+ssh mkaimal-serv.ad.corp.expertcity.com -o ConnectTimeout=5 " synergyc -1 -n mkaimal-serv ${IP_ADDR}:8080 " > /dev/null 2>&1
+if [ $? -ne 0 ]
+  then 
+  printf "\nCannot reach client!! , killing server ! \n" 
+  killall synergys
+fi
+
+}
+
+startserver()
+{
+
+	${syn_path}/synergys -c ${syn_path}/synergy.conf -a ${IP_ADDR}:8080 > /dev/null 2>&1 
+}
+
+
+
+
+IP_ADDR=$( ifconfig en0 | grep 'inet' | awk '{ print $2 }' | grep -v ^127 | egrep '^[0-9].+' )
+
+if [[ -n "$@" ]]
+then 
+while getopts :ULKRrh flag 
+do 
+	case $flag in
+	L) 
+	printf "\033[35;7m <<< The Controlled Screen is on your Left  \033[0m \n" 
+	${syn_path}/synergys -c ${syn_path}/synergy.confLR -a ${IP_ADDR}:8080 > /dev/null 2>&1 
+	startclient
+	;;
+	R)
+	printf "\033[35;7m The Controlled Screen is on your Right >>> \n\033[0m" 
+	${syn_path}/synergys -c ${syn_path}/synergy.confRL -a ${IP_ADDR}:8080 > /dev/null 2>&1 
+	startclient
+	;;
+	K)
+	printf "\033[31;7m Killing Synergy Server   \033[0m\n" 
+ 	killall synergys 
+	while ps -ef | grep synergys | grep -v $$ 1>2 > /dev/null
+		do 
+			echo -n " >  "
+
+		done
+	echo -n "Done " 
+	echo 
+	;;
+
+	r)
+	printf "\033[37;5;7m Killing all Synergy server process  \033[0m \n "
+	killall synergys
+	startserver
+	startclient 
+	;;
+ 	h)
+	usage
+	;;
+	U)
+	printf "Starting synergy server\n"
+	startserver
+	startclient 
+	;;
+	*)
+	usage
+	;;
+	esac
+done 
+else 
+usage
+fi
+
+
+
